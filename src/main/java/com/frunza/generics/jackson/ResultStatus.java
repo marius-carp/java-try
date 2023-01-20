@@ -1,15 +1,28 @@
 package com.frunza.generics.jackson;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "status",
+        defaultImpl = NeverRun.class
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NeverRun.class, name = "neverRun"),
+        @JsonSubTypes.Type(value = Running.class, name = "running"),
+        @JsonSubTypes.Type(value = Failed.class, name = "failed"),
+        @JsonSubTypes.Type(value = Completed.class, name = "completed")
+})
 public interface ResultStatus<ResultType> {
 
     enum Status {
-        @JsonProperty("never_run")
-        NEVER_RUN("never_run"),
+        @JsonProperty("neverRun")
+        NEVER_RUN("neverRun"),
         @JsonProperty("running")
         RUNNING("running"),
         @JsonProperty("failed")
@@ -27,7 +40,7 @@ public interface ResultStatus<ResultType> {
 
     Optional<ZonedDateTime> lastUpdatedAt();
 
-    default <OtherResultType extends ResultType> ResultStatus<ResultType> compareAndSetLAstUpdated(ResultStatus<OtherResultType> oldStatus) {
+    default <OtherResultType extends ResultType> ResultStatus<ResultType> compareAndSetLastUpdated(ResultStatus<OtherResultType> oldStatus) {
        if (copyAsLastUpdated(Optional.empty()) == oldStatus.copyAsLastUpdated(Optional.empty()))
            return this;
        else {
