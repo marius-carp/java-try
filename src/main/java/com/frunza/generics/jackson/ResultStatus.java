@@ -18,7 +18,7 @@ import java.util.Optional;
         @JsonSubTypes.Type(value = Failed.class, name = "failed"),
         @JsonSubTypes.Type(value = Completed.class, name = "completed")
 })
-public interface ResultStatus<ResultType> {
+sealed public interface ResultStatus<ResultType> permits Completed, Failed, NeverRun, Running {
 
     enum Status {
         @JsonProperty("neverRun")
@@ -58,7 +58,6 @@ public interface ResultStatus<ResultType> {
            case Running r -> new Running(r.completionPercentage(), zonedDateTime);
            case Failed f -> new Failed(f.reason(), zonedDateTime);
            case Completed<ResultType> c -> new Completed<>(c.content(), zonedDateTime);
-           default -> throw new IllegalStateException("Unexpected value: " + this);
        };
     }
 }
